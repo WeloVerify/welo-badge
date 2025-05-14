@@ -1,32 +1,33 @@
-Document.addEventListener("DOMContentLoaded", function () {
-  const company = document.getElementById("welo-badge")?.dataset?.company || "default";
 
-  const html = `
-    <div class="welo-badge" id="welo-badge">
-      <div class="welo-logo-container">
-        <img class="welo-logo" src="https://cdn.prod.website-files.com/672c7e4b5413fe846587b57a/682461741cc0cd01187ea413_Rectangle%207089%201.png" alt="Welo Logo" />
-      </div>
-      <div class="welo-text">
-        <span class="welo-title">Welo Badge</span>
-        <span class="welo-subtitle">Azienda Certificata</span>
-      </div>
+document.addEventListener("DOMContentLoaded", function () {
+  const company = document.currentScript.getAttribute("data-company") || "default";
+
+  const badge = document.createElement("div");
+  badge.className = "welo-badge";
+  badge.innerHTML = `
+    <div class="welo-logo-container">
+      <img class="welo-logo" src="https://cdn.prod.website-files.com/672c7e4b5413fe846587b57a/682461741cc0cd01187ea413_Rectangle%207089%201.png" alt="Welo Logo" />
     </div>
+    <div class="welo-text">
+      <span class="welo-title">Welo Badge</span>
+      <span class="welo-subtitle">Azienda Certificata</span>
+    </div>
+  `;
 
-    <div id="welo-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:1000; align-items:center; justify-content:center;">
-      <div style="position:relative; width:90%; max-width:800px; height:80%; background:#fff; border-radius:10px; overflow:hidden; box-shadow:0 10px 30px rgba(0,0,0,0.3);">
-        <button onclick="closeWeloModal()" style="position:absolute; top:10px; right:10px; background:#000; color:#fff; border:none; border-radius:50%; width:32px; height:32px; font-size:18px; cursor:pointer; display:flex; align-items:center; justify-content:center; z-index:1001;">
-          ✕
-        </button>
-        <iframe 
-          src="https://welobadge.com/welo-page/${company}" 
-          style="width:100%; height:100%; border:none;" 
-          loading="lazy">
-        </iframe>
+  const modal = document.createElement("div");
+  modal.id = "welo-overlay";
+  modal.style.display = "none";
+  modal.innerHTML = `
+    <div style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:1000;display:flex;align-items:center;justify-content:center;">
+      <div style="position:relative;width:90%;max-width:800px;height:80%;background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,0.3);">
+        <button id="welo-close-btn" style="position:absolute;top:10px;right:10px;background:#000;color:#fff;border:none;border-radius:50%;width:32px;height:32px;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:1001;">✕</button>
+        <iframe src="https://welobadge.com/welo-page/${company}" style="width:100%;height:100%;border:none;" loading="lazy"></iframe>
       </div>
     </div>
   `;
 
-  const style = `
+  const style = document.createElement("style");
+  style.innerHTML = `
     .welo-badge {
       position: fixed;
       bottom: 20px;
@@ -89,12 +90,10 @@ Document.addEventListener("DOMContentLoaded", function () {
       margin-top: 3px;
     }
 
-    .welo-badge:hover,
     .welo-badge.open {
       max-width: 200px;
     }
 
-    .welo-badge:hover .welo-text,
     .welo-badge.open .welo-text {
       opacity: 1;
       margin-left: 0px;
@@ -102,41 +101,32 @@ Document.addEventListener("DOMContentLoaded", function () {
     }
   `;
 
-  const styleTag = document.createElement("style");
-  styleTag.innerHTML = style;
-  document.head.appendChild(styleTag);
-
-  const wrapper = document.createElement("div");
-  wrapper.innerHTML = html;
-  document.body.appendChild(wrapper);
-
-  const badge = document.querySelector(".welo-badge");
-  const overlay = document.getElementById("welo-overlay");
+  document.head.appendChild(style);
+  document.body.appendChild(badge);
+  document.body.appendChild(modal);
 
   let badgeExpanded = false;
   const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 
-  if (isTouch) {
-    badge.addEventListener('click', function () {
+  badge.addEventListener("click", () => {
+    if (isTouch) {
       if (!badgeExpanded) {
-        badge.classList.add('open');
+        badge.classList.add("open");
         badgeExpanded = true;
       } else {
-        openWeloModal();
+        modal.style.display = "block";
       }
-    });
-  } else {
-    badge.addEventListener('click', openWeloModal);
-  }
+    } else {
+      modal.style.display = "block";
+    }
+    badge.classList.add("open");
+  });
 
-  window.openWeloModal = function () {
-    overlay.style.display = 'flex';
-    badge.classList.add('open');
-  };
-
-  window.closeWeloModal = function () {
-    overlay.style.display = 'none';
-    badge.classList.remove('open');
-    badgeExpanded = false;
-  };
+  document.addEventListener("click", function (e) {
+    if (e.target.id === "welo-close-btn") {
+      modal.style.display = "none";
+      badge.classList.remove("open");
+      badgeExpanded = false;
+    }
+  });
 });
