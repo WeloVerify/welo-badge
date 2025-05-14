@@ -1,4 +1,4 @@
-ocument.addEventListener("DOMContentLoaded", function () {
+Document.addEventListener("DOMContentLoaded", function () {
   const company = document.getElementById("welo-badge")?.dataset?.company || "default";
 
   const html = `
