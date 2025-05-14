@@ -3,11 +3,7 @@
   const thisScript = scripts[scripts.length - 1];
   const targetURL = thisScript?.getAttribute("data-url") || "https://welobadge.com";
 
-  if (!targetURL || targetURL === "https://welobadge.com") {
-    console.warn("[Welo Badge] ⚠ Nessun data-url trovato o URL non valido. Verrà usata la home page come fallback.");
-  } else {
-    console.log("[Welo Badge] ✅ URL caricato:", targetURL);
-  }
+  console.log("[Welo Badge] 📱 1-click on touch devices | 💻 hover on desktop | Full badge visible during modal");
 
   function initBadge() {
     const badge = document.createElement("div");
@@ -125,20 +121,8 @@
     document.body.appendChild(badge);
     document.body.appendChild(modal);
 
-    let badgeExpanded = false;
-    const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-
     badge.addEventListener("click", () => {
-      if (isTouch) {
-        if (!badgeExpanded) {
-          badge.classList.add("open");
-          badgeExpanded = true;
-        } else {
-          modal.style.display = "block";
-        }
-      } else {
-        modal.style.display = "block";
-      }
+      document.getElementById("welo-overlay").style.display = "flex";
       badge.classList.add("open");
     });
 
@@ -146,7 +130,6 @@
       if (e.target.id === "welo-close-btn") {
         modal.style.display = "none";
         badge.classList.remove("open");
-        badgeExpanded = false;
       }
     });
   }
