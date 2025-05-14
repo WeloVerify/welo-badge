@@ -18,7 +18,7 @@
       </div>
       <div class="welo-text">
         <span class="welo-title">Welo Badge</span>
-        <span class="welo-subtitle">Azienda Certificata</span>
+        <span class="welo-subtitle">Certified Company</span>
       </div>
     `;
 
