@@ -1,5 +1,6 @@
+
 document.addEventListener("DOMContentLoaded", function () {
-  const scriptTag = document.querySelector('script[data-url]');
+  const scriptTag = document.currentScript || document.querySelector('script[data-url]');
   const targetURL = scriptTag?.getAttribute("data-url") || "https://welobadge.com";
 
   const badge = document.createElement("div");
@@ -130,4 +131,3 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 });
-
