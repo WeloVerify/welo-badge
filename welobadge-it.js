@@ -377,8 +377,8 @@
 
       @media (max-width: 1024px) and (min-width: 769px) {
         .welo-modal {
-          width: 85%;
-          height: 80%;
+          width: 95%;
+          height: 90%;
         }
 
         .welo-modal-header {
@@ -418,7 +418,7 @@
 
         .welo-modal {
           width: 95%;
-          height: 85%;
+          height: 90%;
           border-radius: 8px;
           margin: 10px;
         }
@@ -444,8 +444,8 @@
 
       @media (max-height: 500px) and (orientation: landscape) {
         .welo-modal {
-          height: 90%;
-          width: 85%;
+          height: 95%;
+          width: 90%;
         }
 
         .welo-modal-header {
