@@ -299,9 +299,9 @@
         .welo-badge {
           bottom: 20px;
           left: 20px;
-          height: 50px;
-          min-width: 50px;
-          max-width: 50px;
+          height: 52px;
+          min-width: 52px;
+          max-width: 52px;
         }
 
         .welo-badge:hover,
@@ -310,8 +310,8 @@
         }
 
         .welo-logo-container {
-          width: 50px;
-          height: 50px;
+          width: 52px;
+          height: 52px;
         }
 
         .welo-logo {
