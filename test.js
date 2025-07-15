@@ -48,11 +48,6 @@
           </div>
         </div>
         
-        <div class="welo-loading" id="welo-loading">
-          <div class="welo-spinner"></div>
-          <p>Caricamento in corso...</p>
-        </div>
-        
         <div class="welo-iframe-container" id="welo-iframe-container">
           <iframe
             id="welo-iframe"
@@ -292,46 +287,11 @@
         color: #1a1a1a;
       }
 
-      .welo-loading {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        flex: 1;
-        background: #ffffff;
-      }
-
-      .welo-spinner {
-        width: 40px;
-        height: 40px;
-        border: 3px solid #f3f4f6;
-        border-top: 3px solid #007bff;
-        border-radius: 50%;
-        animation: welo-spin 1s linear infinite;
-        margin-bottom: 16px;
-      }
-
-      .welo-loading p {
-        margin: 0;
-        color: #6b7280;
-        font-size: 14px;
-        font-weight: 500;
-      }
-
-      @keyframes welo-spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-      }
-
       .welo-iframe-container {
-        display: none;
+        display: block;
         flex: 1;
         background: #ffffff;
         min-height: 0;
-      }
-
-      .welo-iframe-container.loaded {
-        display: block;
       }
 
       /* Desktop specific styles */
@@ -455,10 +415,6 @@
           width: 14px;
           height: 14px;
         }
-
-        .welo-loading p {
-          font-size: 13px;
-        }
       }
 
       @media (max-width: 1024px) and (min-width: 769px) {
@@ -557,10 +513,8 @@
     document.body.appendChild(modal);
 
     // Initialize variables
-    let isLoaded = false;
     let isMobile = window.innerWidth <= 768;
     let isFullscreen = false;
-    let loadingTimeout;
 
     // Detect mobile device
     function detectMobile() {
@@ -609,71 +563,6 @@
       setTimeout(() => {
         modal.classList.add('show');
       }, 10);
-      
-      // Show loading initially
-      document.getElementById('welo-loading').style.display = 'flex';
-      document.getElementById('welo-iframe-container').style.display = 'none';
-      
-      // Handle iframe loading
-      if (!isLoaded) {
-        const iframe = document.getElementById('welo-iframe');
-        
-        // Clear any existing timeout
-        if (loadingTimeout) {
-          clearTimeout(loadingTimeout);
-        }
-        
-        // Real loading detection
-        iframe.onload = function() {
-          // Wait a bit to ensure content is actually rendered
-          setTimeout(() => {
-            try {
-              // Try to access iframe content to ensure it's fully loaded
-              // This will work for same-origin content
-              if (iframe.contentDocument || iframe.contentWindow) {
-                hideLoadingShowContent();
-              } else {
-                // For cross-origin content, we rely on the onload event
-                hideLoadingShowContent();
-              }
-            } catch (e) {
-              // Cross-origin or other error, assume loaded
-              hideLoadingShowContent();
-            }
-          }, 500);
-        };
-        
-        // Error handling
-        iframe.onerror = function() {
-          hideLoadingShowContent();
-        };
-        
-        // Fallback timeout for very slow connections or problematic content
-        loadingTimeout = setTimeout(() => {
-          console.log('[Welo Badge] Fallback timeout triggered');
-          hideLoadingShowContent();
-        }, 15000); // 15 seconds instead of 5
-        
-        function hideLoadingShowContent() {
-          if (loadingTimeout) {
-            clearTimeout(loadingTimeout);
-            loadingTimeout = null;
-          }
-          
-          document.getElementById('welo-loading').style.display = 'none';
-          const container = document.getElementById('welo-iframe-container');
-          container.style.display = 'block';
-          container.classList.add('loaded');
-          isLoaded = true;
-        }
-        
-      } else {
-        // Already loaded, show iframe immediately
-        setTimeout(() => {
-          document.getElementById('welo-loading').style.display = 'none';
-          document.getElementById('welo-iframe-container').style.display = 'block';
-        }, 300);
-      }
     }
 
     function closeWeloModal() {
@@ -684,12 +573,6 @@
         const modalEl = document.querySelector('.welo-modal');
         modalEl.classList.remove('fullscreen');
         isFullscreen = false;
-      }
-      
-      // Clear loading timeout if modal is closed during loading
-      if (loadingTimeout) {
-        clearTimeout(loadingTimeout);
-        loadingTimeout = null;
       }
       
       // Restore body scroll
@@ -763,3 +646,9 @@
     initBadge();
   }
 })();
+
+
+
+
+
+
