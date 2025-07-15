@@ -5,14 +5,38 @@
 
   console.log("[Welo Badge] 📱 1-click on touch devices | 💻 hover on desktop | Full badge visible during modal");
 
+  // Preload critical resources
+  function preloadResources() {
+    // Preload font
+    const fontLink = document.createElement('link');
+    fontLink.rel = 'preload';
+    fontLink.href = 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap';
+    fontLink.as = 'style';
+    fontLink.onload = () => {
+      fontLink.rel = 'stylesheet';
+    };
+    document.head.appendChild(fontLink);
+
+    // Preload logo image
+    const logoImg = new Image();
+    logoImg.src = 'https://cdn.prod.website-files.com/672c7e4b5413fe846587b57a/682461741cc0cd01187ea413_Rectangle%207089%201.png';
+    
+    // Preload icon
+    const iconImg = new Image();
+    iconImg.src = 'https://cdn.prod.website-files.com/672c7e4b5413fe846587b57a/68553e0f860d1da7b26f8f9f_Vector.svg';
+  }
+
   function initBadge() {
+    // Preload resources immediately
+    preloadResources();
+
     // Create Badge
     const badge = document.createElement("div");
     badge.className = "welo-badge";
     badge.id = "welo-badge";
     badge.innerHTML = `
       <div class="welo-logo-container">
-        <img class="welo-logo" src="https://cdn.prod.website-files.com/672c7e4b5413fe846587b57a/682461741cc0cd01187ea413_Rectangle%207089%201.png" alt="Welo Logo" />
+        <img class="welo-logo" src="https://cdn.prod.website-files.com/672c7e4b5413fe846587b57a/682461741cc0cd01187ea413_Rectangle%207089%201.png" alt="Welo Logo" loading="eager" />
       </div>
       <div class="welo-text">
         <span class="welo-title">Welo Badge</span>
@@ -31,7 +55,7 @@
           <h3>Welo Badge</h3>
           <div class="welo-header-buttons">
             <button class="welo-open-btn" id="welo-open-btn">
-              <img src="https://cdn.prod.website-files.com/672c7e4b5413fe846587b57a/68553e0f860d1da7b26f8f9f_Vector.svg" width="14" height="14" alt="Apri" />
+              <img src="https://cdn.prod.website-files.com/672c7e4b5413fe846587b57a/68553e0f860d1da7b26f8f9f_Vector.svg" width="14" height="14" alt="Apri" loading="eager" />
               <span class="welo-btn-text">Apri Welo Page</span>
             </button>
             <button class="welo-fullscreen-btn" id="welo-fullscreen-btn">
@@ -56,7 +80,6 @@
         <div class="welo-iframe-container" id="welo-iframe-container">
           <iframe
             id="welo-iframe"
-            src="${targetURL}"
             style="width:100%; height:100%; border:none; font-family: 'Inter', sans-serif;"
             loading="lazy">
           </iframe>
@@ -64,11 +87,9 @@
       </div>
     `;
 
-    // Create Styles
+    // Create optimized styles with system fonts fallback
     const style = document.createElement("style");
     style.innerHTML = `
-      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
-      
       .welo-badge {
         position: fixed;
         bottom: 20px;
@@ -84,10 +105,11 @@
         min-width: 56px;
         max-width: 56px;
         overflow: hidden;
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         z-index: 9999;
         backdrop-filter: blur(10px);
         font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        will-change: transform, max-width;
       }
 
       .welo-badge:hover {
@@ -108,14 +130,14 @@
         align-items: center;
         justify-content: center;
         flex-shrink: 0;
-        transition: all 0.3s ease;
+        transition: all 0.2s ease;
       }
 
       .welo-logo {
         width: 28px;
         height: 28px;
         object-fit: contain;
-        transition: transform 0.3s ease;
+        transition: transform 0.2s ease;
       }
 
       .welo-badge:hover .welo-logo {
@@ -129,7 +151,7 @@
         opacity: 0;
         margin-left: 0;
         padding-right: 0;
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         white-space: nowrap;
         transform: translateX(-10px);
       }
@@ -170,7 +192,7 @@
         align-items: center;
         justify-content: center;
         opacity: 0;
-        transition: opacity 0.3s ease;
+        transition: opacity 0.2s ease;
         font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       }
 
@@ -188,10 +210,11 @@
         border-radius: 16px;
         overflow: hidden;
         box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
-        transform: scale(0.9) translateY(20px);
-        transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        transform: scale(0.95) translateY(10px);
+        transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
         display: flex;
         flex-direction: column;
+        will-change: transform;
       }
 
       .welo-modal.fullscreen {
@@ -246,7 +269,7 @@
         font-size: 14px;
         font-weight: 600;
         cursor: pointer;
-        transition: all 0.2s ease;
+        transition: all 0.15s ease;
       }
 
       .welo-open-btn:hover {
@@ -265,7 +288,7 @@
         width: 36px;
         height: 36px;
         cursor: pointer;
-        transition: all 0.2s ease;
+        transition: all 0.15s ease;
       }
 
       .welo-fullscreen-btn:hover {
@@ -284,7 +307,7 @@
         width: 36px;
         height: 36px;
         cursor: pointer;
-        transition: all 0.2s ease;
+        transition: all 0.15s ease;
       }
 
       .welo-close-btn:hover {
@@ -302,13 +325,13 @@
       }
 
       .welo-spinner {
-        width: 40px;
-        height: 40px;
-        border: 3px solid #f3f4f6;
-        border-top: 3px solid #007bff;
+        width: 32px;
+        height: 32px;
+        border: 2px solid #f3f4f6;
+        border-top: 2px solid #007bff;
         border-radius: 50%;
-        animation: welo-spin 1s linear infinite;
-        margin-bottom: 16px;
+        animation: welo-spin 0.8s linear infinite;
+        margin-bottom: 12px;
       }
 
       .welo-loading p {
@@ -382,14 +405,6 @@
 
         .welo-subtitle {
           font-size: 11px;
-        }
-
-        .welo-modal {
-          width: 90%;
-          height: 80%;
-          max-height: 600px;
-          border-radius: 12px;
-          margin: 20px;
         }
 
         .welo-modal {
@@ -592,6 +607,63 @@
       }
     }
 
+    // Optimized loading function
+    function hideLoadingShowContent() {
+      if (loadingTimeout) {
+        clearTimeout(loadingTimeout);
+        loadingTimeout = null;
+      }
+      
+      const loading = document.getElementById('welo-loading');
+      const container = document.getElementById('welo-iframe-container');
+      
+      // Fast transition
+      loading.style.display = 'none';
+      container.style.display = 'block';
+      container.classList.add('loaded');
+      isLoaded = true;
+    }
+
+    // Optimized iframe loading
+    function loadIframeContent() {
+      const iframe = document.getElementById('welo-iframe');
+      
+      if (!isLoaded) {
+        // Set src to start loading
+        iframe.src = targetURL;
+        
+        // Optimized loading detection
+        const loadPromise = new Promise((resolve) => {
+          iframe.onload = () => {
+            // Reduced delay for faster response
+            setTimeout(resolve, 100);
+          };
+          
+          iframe.onerror = () => {
+            console.warn('[Welo Badge] Iframe loading error');
+            resolve();
+          };
+        });
+        
+        // Fallback timeout for slow connections
+        const timeoutPromise = new Promise((resolve) => {
+          loadingTimeout = setTimeout(() => {
+            console.log('[Welo Badge] Fallback timeout (12s)');
+            resolve();
+          }, 12000);
+        });
+        
+        // Use the first promise that resolves
+        Promise.race([loadPromise, timeoutPromise]).then(() => {
+          hideLoadingShowContent();
+        });
+        
+      } else {
+        // Already loaded, show immediately
+        hideLoadingShowContent();
+      }
+    }
+
     // Modal functions
     function openWeloModal() {
       modal.style.display = 'flex';
@@ -605,75 +677,17 @@
         history.pushState({modalOpen: true}, '', '');
       }
       
-      // Trigger animation
-      setTimeout(() => {
+      // Trigger animation faster
+      requestAnimationFrame(() => {
         modal.classList.add('show');
-      }, 10);
+      });
       
       // Show loading initially
       document.getElementById('welo-loading').style.display = 'flex';
       document.getElementById('welo-iframe-container').style.display = 'none';
       
-      // Handle iframe loading
-      if (!isLoaded) {
-        const iframe = document.getElementById('welo-iframe');
-        
-        // Clear any existing timeout
-        if (loadingTimeout) {
-          clearTimeout(loadingTimeout);
-        }
-        
-        // Real loading detection
-        iframe.onload = function() {
-          // Wait a bit to ensure content is actually rendered
-          setTimeout(() => {
-            try {
-              // Try to access iframe content to ensure it's fully loaded
-              // This will work for same-origin content
-              if (iframe.contentDocument || iframe.contentWindow) {
-                hideLoadingShowContent();
-              } else {
-                // For cross-origin content, we rely on the onload event
-                hideLoadingShowContent();
-              }
-            } catch (e) {
-              // Cross-origin or other error, assume loaded
-              hideLoadingShowContent();
-            }
-          }, 500);
-        };
-        
-        // Error handling
-        iframe.onerror = function() {
-          hideLoadingShowContent();
-        };
-        
-        // Fallback timeout for very slow connections or problematic content
-        loadingTimeout = setTimeout(() => {
-          console.log('[Welo Badge] Fallback timeout triggered');
-          hideLoadingShowContent();
-        }, 15000); // 15 seconds instead of 5
-        
-        function hideLoadingShowContent() {
-          if (loadingTimeout) {
-            clearTimeout(loadingTimeout);
-            loadingTimeout = null;
-          }
-          
-          document.getElementById('welo-loading').style.display = 'none';
-          const container = document.getElementById('welo-iframe-container');
-          container.style.display = 'block';
-          container.classList.add('loaded');
-          isLoaded = true;
-        }
-        
-      } else {
-        // Already loaded, show iframe immediately
-        setTimeout(() => {
-          document.getElementById('welo-loading').style.display = 'none';
-          document.getElementById('welo-iframe-container').style.display = 'block';
-        }, 300);
-      }
+      // Load iframe content
+      loadIframeContent();
     }
 
     function closeWeloModal() {
@@ -695,10 +709,11 @@
       // Restore body scroll
       document.body.style.overflow = '';
       
+      // Faster close animation
       setTimeout(() => {
         modal.style.display = 'none';
         badge.classList.remove('open');
-      }, 300);
+      }, 200);
     }
 
     function openWeloPage() {
@@ -717,16 +732,26 @@
       openWeloModal();
     });
 
-    // Touch events for better mobile experience
+    // Optimized touch events
+    let touchStarted = false;
     badge.addEventListener('touchstart', (e) => {
       e.preventDefault();
+      touchStarted = true;
       badge.style.transform = 'scale(0.95)';
     });
 
     badge.addEventListener('touchend', (e) => {
       e.preventDefault();
+      if (touchStarted) {
+        badge.style.transform = '';
+        openWeloModal();
+        touchStarted = false;
+      }
+    });
+
+    badge.addEventListener('touchcancel', () => {
+      touchStarted = false;
       badge.style.transform = '';
-      openWeloModal();
     });
 
     // Modal event listeners
