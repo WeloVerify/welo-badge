@@ -34,6 +34,11 @@
               <img src="https://cdn.prod.website-files.com/672c7e4b5413fe846587b57a/68553e0f860d1da7b26f8f9f_Vector.svg" width="14" height="14" alt="Apri" />
               <span class="welo-btn-text">Open Welo Page</span>
             </button>
+            <button class="welo-fullscreen-btn" id="welo-fullscreen-btn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+              </svg>
+            </button>
             <button class="welo-close-btn" id="welo-close-btn">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <line x1="18" y1="6" x2="6" y2="18"/>
@@ -41,11 +46,6 @@
               </svg>
             </button>
           </div>
-        </div>
-        
-        <div class="welo-loading" id="welo-loading">
-          <div class="welo-spinner"></div>
-          <p>Loading...</p>
         </div>
         
         <div class="welo-iframe-container" id="welo-iframe-container">
@@ -175,10 +175,10 @@
 
       .welo-modal {
         position: relative;
-        width: 90%;
-        max-width: 900px;
-        height: 85%;
-        max-height: 700px;
+        width: 95%;
+        max-width: 1200px;
+        height: 90%;
+        max-height: 800px;
         background: #ffffff;
         border-radius: 16px;
         overflow: hidden;
@@ -189,6 +189,19 @@
         flex-direction: column;
       }
 
+      .welo-modal.fullscreen {
+        width: 100vw;
+        height: 100vh;
+        max-width: 100vw;
+        max-height: 100vh;
+        border-radius: 0;
+        transform: scale(1) translateY(0);
+        left: 0;
+        top: 0;
+        position: fixed;
+        margin: 0;
+      }
+
       .welo-overlay.show .welo-modal {
         transform: scale(1) translateY(0);
       }
@@ -197,9 +210,10 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: 7px 40px;
+        padding: 16px 40px;
         border-bottom: 1px solid #e9ecef;
         background: #f8f9fa;
+        flex-shrink: 0;
       }
 
       .welo-modal-header h3 {
@@ -235,6 +249,25 @@
         transform: translateY(-1px);
       }
 
+      .welo-fullscreen-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f8f9fa;
+        color: #6b7280;
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        width: 36px;
+        height: 36px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .welo-fullscreen-btn:hover {
+        background: #e9ecef;
+        color: #1a1a1a;
+      }
+
       .welo-close-btn {
         display: flex;
         align-items: center;
@@ -254,45 +287,29 @@
         color: #1a1a1a;
       }
 
-      .welo-loading {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        flex: 1;
-        background: #ffffff;
-      }
-
-      .welo-spinner {
-        width: 40px;
-        height: 40px;
-        border: 3px solid #f3f4f6;
-        border-top: 3px solid #007bff;
-        border-radius: 50%;
-        animation: welo-spin 1s linear infinite;
-        margin-bottom: 16px;
-      }
-
-      .welo-loading p {
-        margin: 0;
-        color: #6b7280;
-        font-size: 14px;
-        font-weight: 500;
-      }
-
-      @keyframes welo-spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-      }
-
       .welo-iframe-container {
-        display: none;
+        display: block;
         flex: 1;
         background: #ffffff;
+        min-height: 0;
       }
 
-      .welo-iframe-container.loaded {
-        display: block;
+      /* Desktop specific styles */
+      @media (min-width: 1025px) {
+        .welo-modal {
+          width: 95%;
+          max-width: 1400px;
+          height: 90%;
+          max-height: 900px;
+        }
+        
+        .welo-modal-header {
+          padding: 20px 50px;
+        }
+        
+        .welo-modal-header h3 {
+          font-size: 20px;
+        }
       }
 
       @media (max-width: 768px) {
@@ -335,6 +352,25 @@
           margin: 20px;
         }
 
+        .welo-modal {
+          width: 95%;
+          height: 90%;
+          border-radius: 8px;
+          margin: 10px;
+        }
+
+        .welo-modal.fullscreen {
+          width: 100vw;
+          height: 100vh;
+          max-width: 100vw;
+          max-height: 100vh;
+          border-radius: 0;
+          margin: 0;
+          left: 0;
+          top: 0;
+          position: fixed;
+        }
+
         .welo-modal-header {
           padding: 16px 20px;
           flex-wrap: wrap;
@@ -360,6 +396,16 @@
           display: none;
         }
 
+        .welo-fullscreen-btn {
+          width: 32px;
+          height: 32px;
+        }
+
+        .welo-fullscreen-btn svg {
+          width: 14px;
+          height: 14px;
+        }
+
         .welo-close-btn {
           width: 32px;
           height: 32px;
@@ -369,20 +415,18 @@
           width: 14px;
           height: 14px;
         }
-
-        .welo-loading p {
-          font-size: 13px;
-        }
       }
 
       @media (max-width: 1024px) and (min-width: 769px) {
         .welo-modal {
           width: 95%;
-          height: 90%;
+          height: 85%;
+          max-width: 1000px;
+          max-height: 750px;
         }
 
         .welo-modal-header {
-          padding: 18px 22px;
+          padding: 18px 30px;
         }
       }
 
@@ -397,14 +441,13 @@
         }
 
         .welo-open-btn:hover,
+        .welo-fullscreen-btn:hover,
         .welo-close-btn:hover {
           transform: none;
         }
 
-        .welo-open-btn:active {
-          transform: scale(0.95);
-        }
-
+        .welo-open-btn:active,
+        .welo-fullscreen-btn:active,
         .welo-close-btn:active {
           transform: scale(0.95);
         }
@@ -416,11 +459,16 @@
           left: 16px;
         }
 
-        .welo-modal {
-          width: 95%;
-          height: 90%;
-          border-radius: 8px;
-          margin: 10px;
+        .welo-modal.fullscreen {
+          width: 100vw;
+          height: 100vh;
+          max-width: 100vw;
+          max-height: 100vh;
+          border-radius: 0;
+          margin: 0;
+          left: 0;
+          top: 0;
+          position: fixed;
         }
 
         .welo-modal-header {
@@ -434,6 +482,11 @@
         .welo-open-btn {
           padding: 6px 10px;
           font-size: 12px;
+        }
+
+        .welo-fullscreen-btn {
+          width: 30px;
+          height: 30px;
         }
 
         .welo-close-btn {
@@ -460,8 +513,8 @@
     document.body.appendChild(modal);
 
     // Initialize variables
-    let isLoaded = false;
     let isMobile = window.innerWidth <= 768;
+    let isFullscreen = false;
 
     // Detect mobile device
     function detectMobile() {
@@ -470,6 +523,28 @@
 
     // Handle window resize
     window.addEventListener('resize', detectMobile);
+
+    // Fullscreen functionality
+    function toggleFullscreen() {
+      const modalEl = document.querySelector('.welo-modal');
+      isFullscreen = !isFullscreen;
+      
+      if (isFullscreen) {
+        modalEl.classList.add('fullscreen');
+        document.getElementById('welo-fullscreen-btn').innerHTML = `
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/>
+          </svg>
+        `;
+      } else {
+        modalEl.classList.remove('fullscreen');
+        document.getElementById('welo-fullscreen-btn').innerHTML = `
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+          </svg>
+        `;
+      }
+    }
 
     // Modal functions
     function openWeloModal() {
@@ -488,45 +563,17 @@
       setTimeout(() => {
         modal.classList.add('show');
       }, 10);
-      
-      // Show loading initially
-      document.getElementById('welo-loading').style.display = 'flex';
-      document.getElementById('welo-iframe-container').style.display = 'none';
-      
-      // Handle iframe loading
-      if (!isLoaded) {
-        const iframe = document.getElementById('welo-iframe');
-        iframe.onload = function() {
-          setTimeout(() => {
-            document.getElementById('welo-loading').style.display = 'none';
-            const container = document.getElementById('welo-iframe-container');
-            container.style.display = 'block';
-            container.classList.add('loaded');
-            isLoaded = true;
-          }, 800);
-        };
-        
-        // Fallback timeout
-        setTimeout(() => {
-          if (!isLoaded) {
-            document.getElementById('welo-loading').style.display = 'none';
-            const container = document.getElementById('welo-iframe-container');
-            container.style.display = 'block';
-            container.classList.add('loaded');
-            isLoaded = true;
-          }
-        }, 5000);
-      } else {
-        // Already loaded, show iframe immediately
-        setTimeout(() => {
-          document.getElementById('welo-loading').style.display = 'none';
-          document.getElementById('welo-iframe-container').style.display = 'block';
-        }, 300);
-      }
     }
 
     function closeWeloModal() {
       modal.classList.remove('show');
+      
+      // Reset fullscreen state when closing
+      if (isFullscreen) {
+        const modalEl = document.querySelector('.welo-modal');
+        modalEl.classList.remove('fullscreen');
+        isFullscreen = false;
+      }
       
       // Restore body scroll
       document.body.style.overflow = '';
@@ -568,6 +615,7 @@
     // Modal event listeners
     document.getElementById('welo-close-btn').addEventListener('click', closeWeloModal);
     document.getElementById('welo-open-btn').addEventListener('click', openWeloPage);
+    document.getElementById('welo-fullscreen-btn').addEventListener('click', toggleFullscreen);
 
     // Close modal on overlay click
     modal.addEventListener('click', (e) => {
