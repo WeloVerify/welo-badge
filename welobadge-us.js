@@ -7,9 +7,13 @@
 
   function initBadge() {
     // Create Badge
-    const badge = document.createElement("div");
-    badge.className = "welo-badge";
-    badge.id = "welo-badge";
+    const badge = document.createElement("a");
+badge.className = "welo-badge";
+badge.id = "welo-badge";
+badge.href = targetURL;
+badge.target = "_blank";
+badge.rel = "noopener";
+
     badge.innerHTML = `
       <div class="welo-logo-container">
         <img class="welo-logo" src="https://cdn.prod.website-files.com/672c7e4b5413fe846587b57a/682461741cc0cd01187ea413_Rectangle%207089%201.png" alt="Welo Logo" />
