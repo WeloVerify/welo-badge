@@ -428,7 +428,7 @@
       .welo-iframe-container{ flex:1; min-height:0; background:#fff; }
 
       @media (max-width: 768px){
-        .welo-badge-wrap{ bottom:18px; left:18px; }
+        .welo-badge-wrap{ bottom:30px; left:18px; }
 
         .welo-pill{ height:52px; width:52px; }
         .welo-logo-container{ width:52px; height:52px; flex:0 0 52px; }
