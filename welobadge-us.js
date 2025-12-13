@@ -4,7 +4,6 @@
 
   const targetURL = thisScript?.getAttribute("data-url") || "https://welobadge.com";
 
-  // Passed via jsDelivr snippet
   const forcedCompany =
     thisScript?.getAttribute("data-company") ||
     thisScript?.getAttribute("data-company-name") ||
@@ -64,7 +63,7 @@
 
     const ROTATION = [
       { text: "Company verified by Welo", duration: 4200 },
-      { text: `See why ${companyName} is safe`, duration: 4200 },
+      { text: `See why ${companyName} is secure`, duration: 4200 },
       { text: "View verified reviews", duration: 4200 },
     ];
 
@@ -142,8 +141,6 @@
       :root{
         --welo-pill-width: 300px; /* overwritten by JS */
         --welo-stroke: #DBDBDB;
-
-        /* Lighter shadow */
         --welo-shadow: 0px 4px 10px rgba(0,0,0,0.08);
         --welo-shadow-hover: 0px 6px 14px rgba(0,0,0,0.09);
       }
@@ -159,6 +156,9 @@
         left: 20px;
         z-index: 9999;
         font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+        /* ✅ prevents iOS text autosizing that can mess up heights */
+        -webkit-text-size-adjust: 100%;
 
         opacity: 0;
         transform: translateY(10px);
@@ -237,8 +237,8 @@
           opacity 320ms cubic-bezier(0.22, 1, 0.36, 1),
           transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
 
-        padding-right: 12px;
-        padding-left: 0px;
+        /* ✅ “g gets cut”: a touch of vertical padding */
+        padding: 1px 12px 2px 0px;
       }
 
       .welo-badge-wrap.is-expanded .welo-text{
@@ -246,27 +246,33 @@
         transform: translateX(0);
       }
 
-      /* ✅ NO ELLIPSIS (DESKTOP + MOBILE) */
+      /* ✅ no ellipsis (desktop + mobile) + safe descenders */
       .welo-title{
+        display:block;
         font-size:16px;
-        font-weight:600; /* SemiBold */
+        font-weight:600;
         color:#141414;
-        line-height:1.1;
+
+        /* ✅ safer line-height for descenders (g,p,y) */
+        line-height:1.22;
 
         white-space: nowrap;
         overflow: hidden;
-        text-overflow: clip; /* <-- no ... */
+        text-overflow: clip;
       }
 
       .welo-subtitle{
+        display:block;
         font-size:12px;
-        font-weight:400; /* Medium */
+        font-weight:400;
         color:#8A8A8A;
-        line-height:1.15;
+
+        /* ✅ safe here too */
+        line-height:1.22;
 
         white-space:nowrap;
         overflow:hidden;
-        text-overflow: clip; /* <-- no ... */
+        text-overflow: clip;
 
         transition:
           opacity 420ms cubic-bezier(0.22, 1, 0.36, 1),
@@ -274,7 +280,6 @@
         will-change: opacity, transform;
       }
 
-      /* smooth swap */
       .welo-subtitle.welo-subtitle-out{ opacity:0; transform: translateY(8px); }
       .welo-subtitle.welo-subtitle-prein{ opacity:0; transform: translateY(-8px); }
 
@@ -429,9 +434,11 @@
         .welo-logo-container{ width:52px; height:52px; flex:0 0 52px; }
         .welo-logo{ width:26px; height:26px; }
 
-        .welo-title{ font-size:15px; }
-        .welo-subtitle{ font-size:11px; }
-        .welo-text{ padding-right: 10px; padding-left: 0px; }
+        .welo-title{ font-size:15px; line-height:1.22; }
+        .welo-subtitle{ font-size:11px; line-height:1.22; }
+
+        /* ✅ same fix on mobile */
+        .welo-text{ padding: 1px 10px 2px 0px; }
 
         .welo-badge-dismiss{
           width:24px;
@@ -500,15 +507,12 @@
       const subLS = subStyle?.letterSpacing || "";
 
       let maxText = 0;
-
       maxText = Math.max(maxText, measureWithFont(TITLE_TEXT, titleFont, titleLS));
       for (const s of ROTATION) {
         maxText = Math.max(maxText, measureWithFont(s.text, subFont, subLS));
       }
 
-      // Small anti-rounding fudge (without creating visible right gap)
       const fudge = 6;
-
       let w = logoW + maxText + padRight + fudge;
 
       const maxAllowed = Math.min(520, window.innerWidth - 44);
@@ -518,7 +522,6 @@
       document.documentElement.style.setProperty("--welo-pill-width", `${w}px`);
     }
 
-    // compute now + after font load
     computePillWidth();
     window.addEventListener("resize", computePillWidth);
 
@@ -582,7 +585,6 @@
     function expandPill() {
       if (userCollapsed) return;
       wrap.classList.add("is-expanded");
-      // recalc after expand (pixel-perfect)
       setTimeout(computePillWidth, 50);
       startRotation();
     }
