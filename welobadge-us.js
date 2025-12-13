@@ -238,7 +238,7 @@
           transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
 
         /* ✅ “g gets cut”: a touch of vertical padding */
-        padding: 1px 12px 2px 0px;
+        padding: 1px 15px 2px 0px;
       }
 
       .welo-badge-wrap.is-expanded .welo-text{
@@ -438,7 +438,7 @@
         .welo-subtitle{ font-size:11px; line-height:1.22; }
 
         /* ✅ same fix on mobile */
-        .welo-text{ padding: 1px 10px 2px 0px; }
+        .welo-text{ padding: 1px 12px 2px 0px; }
 
         .welo-badge-dismiss{
           width:24px;
