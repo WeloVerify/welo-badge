@@ -479,7 +479,7 @@
           color:#6b7280;
           border:none;
           border-radius:6px;
-          padding:6px 10px;
+          padding:8px 12px;
           cursor:pointer;
           transition: all 0.15s ease;
           font-size:13px;
