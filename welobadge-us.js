@@ -447,7 +447,7 @@
           border-bottom: 1px solid #eeeeee;
           background: var(--welo-header-bg);
           flex-shrink:0;
-          height: 48px;
+          height: 56px;
           position: relative;
           z-index: 5;
         }
