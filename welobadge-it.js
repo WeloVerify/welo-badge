@@ -529,84 +529,85 @@
 
         /* MOBILE (fix header missing on iOS Safari/Chrome) */
         @media (max-width: 768px){
-          .welo-badge-wrap{
-            bottom: var(--welo-bottom-m, 30px);
-          }
+  .welo-badge-wrap{
+    bottom: var(--welo-bottom-m, 30px);
+  }
 
-          .welo-badge-wrap.welo-align-left{
-            left: var(--welo-side-m, 18px);
-            right:auto;
-          }
-          .welo-badge-wrap.welo-align-right{
-            right: var(--welo-side-m, 18px);
-            left:auto;
-          }
-          .welo-badge-wrap.welo-align-center{
-            left:50%;
-            right:auto;
-          }
+  .welo-badge-wrap.welo-align-left{
+    left: var(--welo-side-m, 18px);
+    right:auto;
+  }
+  .welo-badge-wrap.welo-align-right{
+    right: var(--welo-side-m, 18px);
+    left:auto;
+  }
+  .welo-badge-wrap.welo-align-center{
+    left:50%;
+    right:auto;
+  }
 
-          .welo-pill{ height:52px; width:52px; }
-          .welo-logo-container{ width:52px; height:52px; flex:0 0 52px; }
-          .welo-logo{ width:26px; height:26px; }
+  .welo-pill{ height:52px; width:52px; }
+  .welo-logo-container{ width:52px; height:52px; flex:0 0 52px; }
+  .welo-logo{ width:26px; height:26px; }
 
-          .welo-title{ font-size:15px; line-height:1.22; }
-          .welo-subtitle{ font-size:11px; line-height:1.22; }
+  .welo-title{ font-size:15px; line-height:1.22; }
+  .welo-subtitle{ font-size:11px; line-height:1.22; }
 
-          .welo-text{ padding: 1px 12px 2px 0px; }
+  .welo-text{ padding: 1px 12px 2px 0px; }
 
-          .welo-badge-dismiss{
-            width:24px;
-            height:24px;
-            top:-6px;
-            right:-6px;
-          }
-          .welo-badge-dismiss svg{
-            width:13px;
-            height:13px;
-            stroke-width:2.8;
-          }
+  .welo-badge-dismiss{
+    width:24px;
+    height:24px;
+    top:-6px;
+    right:-6px;
+  }
+  .welo-badge-dismiss svg{
+    width:13px;
+    height:13px;
+    stroke-width:2.8;
+  }
 
-          /* IMPORTANT: don't center the modal on mobile (100vh bug), stretch it */
-          .welo-overlay{
-            align-items:stretch;
-            justify-content:stretch;
-          }
+  /* ✅ keep the modal centered (no forced fullscreen) */
+  .welo-overlay{
+    align-items:center;
+    justify-content:center;
+  }
 
-          .welo-modal{
-            width:100vw;
-            max-width:100vw;
-            height: calc(var(--welo-vh, 1vh) * 100);
-            max-height: none;
-            border-radius:0;
-            transform: none;
-            box-shadow: none;
-            margin:0;
-          }
-          .welo-overlay.show .welo-modal{ transform:none; }
+  /* ✅ modal like desktop (not 100vw/100vh) */
+  .welo-modal{
+    width:95%;
+    max-width:1200px;
+    height:90%;
+    max-height:800px;
+    border-radius:16px;
+    transform: none;
+    box-shadow: 0 25px 50px rgba(0,0,0,0.25);
+    margin:auto;
+  }
+  .welo-overlay.show .welo-modal{ transform:none; }
 
-          /* safe-area + visible header */
-          .welo-modal-header{
-            padding: calc(6px + env(safe-area-inset-top, 0px)) 12px 6px;
-            height: calc(40px + env(safe-area-inset-top, 0px));
-            background: var(--welo-header-bg);
-          }
+  /* safe-area + visible header (ok anche senza fullscreen) */
+  .welo-modal-header{
+    padding: calc(6px + env(safe-area-inset-top, 0px)) 12px 6px;
+    height: calc(40px + env(safe-area-inset-top, 0px));
+    background: var(--welo-header-bg);
+  }
 
-          .welo-header-title{ font-size:13px; }
+  .welo-header-title{ font-size:13px; }
 
-          .welo-header-buttons{ gap:6px; }
+  .welo-header-buttons{ gap:6px; }
 
-          .welo-open-btn,
-          .welo-fullscreen-btn,
-          .welo-close-btn{
-            padding:6px 8px;
-            min-height:30px;
-            font-size:12px;
-          }
+  .welo-open-btn,
+  .welo-fullscreen-btn,
+  .welo-close-btn{
+    padding:6px 8px;
+    min-height:30px;
+    font-size:12px;
+  }
 
-          /* fullscreen button hidden on mobile */
-          .welo-fullscreen-btn{ display:none; }
-        }
+  /* fullscreen button hidden on mobile */
+  .welo-fullscreen-btn{ display:none; }
+}
 
         @media (prefers-reduced-motion: reduce){
           .welo-badge-wrap, .welo-pill, .welo-text, .welo-subtitle{ transition:none !important; }
