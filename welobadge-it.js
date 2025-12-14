@@ -443,7 +443,7 @@
           display:flex;
           align-items:center;
           justify-content:space-between;
-          padding: 6px 14px;
+          padding: 15px 20px;
           border-bottom: 1px solid #eeeeee;
           background: var(--welo-header-bg);
           flex-shrink:0;
