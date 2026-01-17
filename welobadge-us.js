@@ -1,4 +1,3 @@
-<script>
 (function () {
   "use strict";
 
@@ -1014,4 +1013,3 @@
     initBadge();
   }
 })();
-</script>
