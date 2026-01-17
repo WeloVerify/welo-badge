@@ -26,7 +26,7 @@
 
   const DESKTOP_BOTTOM = numOr(thisScript.getAttribute("data-bottom"), 20);
   const DESKTOP_SIDE = numOr(thisScript.getAttribute("data-side"), 20);
-  const MOBILE_BOTTOM = numOr(thisScript.getAttribute("data-mobile-bottom"), 20);
+  const MOBILE_BOTTOM = numOr(thisScript.getAttribute("data-mobile-bottom"), 18);
   const MOBILE_SIDE = numOr(thisScript.getAttribute("data-mobile-side"), 18);
 
   const SHOW_CIRCLE_AFTER_MS = numOr(thisScript.getAttribute("data-show-ms"), 250);
@@ -530,7 +530,7 @@
         /* MOBILE (fix header missing on iOS Safari/Chrome) */
         @media (max-width: 768px){
   .welo-badge-wrap{
-    bottom: var(--welo-bottom-m, 20px);
+    bottom: var(--welo-bottom-m, 18px);
   }
 
   .welo-badge-wrap.welo-align-left{
