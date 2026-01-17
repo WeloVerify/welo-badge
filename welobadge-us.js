@@ -199,11 +199,15 @@
               </svg>
               <span class="welo-btn-text">Open</span>
             </button>
+
+            <!-- ✅ FULLSCREEN / ZOOM BUTTON (VISIBLE ON MOBILE TOO) -->
             <button class="welo-fullscreen-btn" id="welo-fullscreen-btn" type="button" title="Full screen" aria-pressed="false">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
               </svg>
+              <span class="welo-btn-text">Full</span>
             </button>
+
             <button class="welo-close-btn" id="welo-close-btn" type="button" title="Close">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <line x1="18" y1="6" x2="6" y2="18"/>
@@ -489,9 +493,9 @@
 
         .welo-modal.fullscreen{
           width:100vw;
-          height:100vh;
+          height: calc(var(--welo-vh, 1vh) * 100);
           max-width:100vw;
-          max-height:100vh;
+          max-height: calc(var(--welo-vh, 1vh) * 100);
           border-radius:0;
           transform:none;
           position:fixed;
@@ -510,7 +514,7 @@
           flex-shrink:0;
           height: 56px;
           position: relative;
-          z-index: 5;
+          z-index: 15;
         }
 
         .welo-header-title{
@@ -670,7 +674,7 @@
           .welo-skel-card{ height: 96px; }
         }
 
-        /* MOBILE (fix header missing on iOS Safari/Chrome) */
+        /* MOBILE */
         @media (max-width: 768px){
           .welo-badge-wrap{
             bottom: var(--welo-bottom-m, 18px);
@@ -710,11 +714,6 @@
             stroke-width:2.8;
           }
 
-          .welo-overlay{
-            align-items:center;
-            justify-content:center;
-          }
-
           .welo-modal{
             width:95%;
             max-width:1200px;
@@ -725,18 +724,16 @@
             box-shadow: 0 25px 50px rgba(0,0,0,0.25);
             margin:auto;
           }
-          .welo-overlay.show .welo-modal{ transform:none; }
 
+          /* ✅ IMPORTANT: fullscreen button visible on mobile now */
+          .welo-fullscreen-btn{ display:flex; }
+
+          /* slightly smaller button text on mobile */
+          .welo-btn-text{ font-size:12px; }
           .welo-modal-header{
-            padding: calc(6px + env(safe-area-inset-top, 0px)) 12px 6px;
-            height: calc(40px + env(safe-area-inset-top, 0px));
-            background: var(--welo-header-bg);
+            padding: calc(6px + env(safe-area-inset-top, 0px)) 10px 6px;
+            height: calc(44px + env(safe-area-inset-top, 0px));
           }
-
-          .welo-header-title{ font-size:13px; }
-
-          .welo-header-buttons{ gap:6px; }
-
           .welo-open-btn,
           .welo-fullscreen-btn,
           .welo-close-btn{
@@ -744,8 +741,6 @@
             min-height:30px;
             font-size:12px;
           }
-
-          .welo-fullscreen-btn{ display:none; }
         }
 
         @media (prefers-reduced-motion: reduce){
@@ -958,7 +953,7 @@
       if (subEl) subEl.textContent = ROTATION[0].text;
     }
 
-    // ---------- Modal ----------
+    // ---------- Fullscreen / "Zoom" ----------
     function setFullscreenUI(isOn) {
       const modalEl = modal.querySelector(".welo-modal");
       if (!modalEl || !fullscreenBtn) return;
@@ -973,6 +968,8 @@
           </svg>
         `;
         fullscreenBtn.title = "Exit full screen";
+        const t = fullscreenBtn.querySelector(".welo-btn-text");
+        if (t) t.textContent = "Exit";
       } else {
         modalEl.classList.remove("fullscreen");
         fullscreenBtn.innerHTML = `
@@ -981,14 +978,18 @@
           </svg>
         `;
         fullscreenBtn.title = "Full screen";
+        const t = fullscreenBtn.querySelector(".welo-btn-text");
+        if (t) t.textContent = "Full";
       }
     }
 
     function toggleFullscreen() {
       isFullscreen = !isFullscreen;
+      setViewportUnit();
       setFullscreenUI(isFullscreen);
     }
 
+    // ---------- Skeleton control ----------
     function showSkeleton() {
       if (!skel) return;
       skel.classList.remove("is-hidden");
@@ -997,7 +998,6 @@
     function hideSkeleton() {
       if (!skel) return;
       skel.classList.add("is-hidden");
-      // remove from DOM after fade (optional, but keeps it clean)
       setTimeout(() => {
         try {
           if (skel && skel.parentNode) skel.parentNode.removeChild(skel);
@@ -1008,11 +1008,9 @@
     function ensureIframeLoaded() {
       if (!iframe) return;
 
-      // always show skeleton when we start loading
       showSkeleton();
 
       if (iframe.getAttribute("data-loaded") === "1") {
-        // already loaded once; ensure skeleton is gone
         hideSkeleton();
         return;
       }
@@ -1034,7 +1032,6 @@
 
       lastActiveEl = document.activeElement || null;
 
-      // Show immediately (paint first), then load iframe in next tick
       modal.style.display = "flex";
       modal.setAttribute("aria-hidden", "false");
 
@@ -1042,7 +1039,6 @@
         modal.classList.add("show");
         lockBody();
 
-        // Load iframe AFTER overlay is visible (so skeleton appears instantly)
         setTimeout(() => {
           ensureIframeLoaded();
         }, 0);
@@ -1095,7 +1091,6 @@
     }
 
     if (pill) {
-      // warm-up prefetch right before click / hover
       pill.addEventListener("mouseenter", prefetchWeloPage, { once: true });
       pill.addEventListener("pointerdown", prefetchWeloPage, { once: true });
 
