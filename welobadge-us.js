@@ -1,3 +1,4 @@
+<script>
 (function () {
   "use strict";
 
@@ -40,6 +41,44 @@
       0;
     const vh = Math.max(1, h * 0.01);
     document.documentElement.style.setProperty("--welo-vh", `${vh}px`);
+  }
+
+  // ---------- Network warmup (preconnect/prefetch) ----------
+  function addLink(rel, href, crossOrigin) {
+    if (!href) return;
+    const safeId = String(href).replace(/[^a-z0-9]+/gi, "-").slice(0, 80);
+    const id = `welo-${rel}-${safeId}`;
+    if (document.getElementById(id)) return;
+
+    const l = document.createElement("link");
+    l.id = id;
+    l.rel = rel;
+    l.href = href;
+    if (crossOrigin) l.crossOrigin = crossOrigin;
+    document.head.appendChild(l);
+  }
+
+  function warmupConnections() {
+    try {
+      const u = new URL(targetURL);
+      addLink("preconnect", u.origin, "anonymous");
+      addLink("dns-prefetch", u.origin);
+
+      // common CDNs (safe, best-effort)
+      addLink("preconnect", "https://cdn.prod.website-files.com", "anonymous");
+      addLink("dns-prefetch", "https://cdn.prod.website-files.com");
+
+      // if you use Inter from Google fonts elsewhere on the site (no @import here)
+      addLink("preconnect", "https://fonts.googleapis.com");
+      addLink("preconnect", "https://fonts.gstatic.com", "anonymous");
+    } catch (e) {}
+  }
+
+  function prefetchWeloPage() {
+    if (prefetchWeloPage._done) return;
+    prefetchWeloPage._done = true;
+    // best-effort: some browsers may ignore
+    addLink("prefetch", targetURL);
   }
 
   // ---------- Helpers ----------
@@ -90,6 +129,7 @@
     if (document.getElementById("welo-badge-wrap") || document.getElementById("welo-overlay")) return;
 
     setViewportUnit();
+    warmupConnections();
 
     const companyName =
       sanitizeCompanyName(forcedCompany || deriveCompanyName(targetURL)) || "Company";
@@ -177,11 +217,19 @@
         </div>
 
         <div class="welo-iframe-container">
+          <!-- inline skeleton: shows instantly even if CSS is delayed -->
+          <div id="welo-skel" style="
+            position:absolute; inset:0;
+            display:flex; align-items:center; justify-content:center;
+            font: 500 13px/1.2 -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            color:#6b7280; background:#fff;
+          ">Loading…</div>
+
           <iframe
             id="welo-iframe"
             data-loaded="0"
             title="Welo Page"
-            style="width:100%; height:100%; border:none; font-family: 'Inter', sans-serif; display:block;"
+            style="width:100%; height:100%; border:none; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; display:block;"
             loading="lazy"></iframe>
         </div>
       </div>
@@ -192,7 +240,7 @@
       const style = document.createElement("style");
       style.id = "welo-badge-style";
       style.innerHTML = `
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+        /* NOTE: removed @import to avoid delaying initial paint */
 
         :root{
           --welo-pill-width: 300px; /* overwritten by JS */
@@ -523,91 +571,91 @@
           flex:1;
           min-height:0;
           background:#fff;
-          position:relative;
+          position:relative; /* needed for inline skeleton absolute */
           z-index:1;
         }
 
         /* MOBILE (fix header missing on iOS Safari/Chrome) */
         @media (max-width: 768px){
-  .welo-badge-wrap{
-    bottom: var(--welo-bottom-m, 18px);
-  }
+          .welo-badge-wrap{
+            bottom: var(--welo-bottom-m, 18px);
+          }
 
-  .welo-badge-wrap.welo-align-left{
-    left: var(--welo-side-m, 18px);
-    right:auto;
-  }
-  .welo-badge-wrap.welo-align-right{
-    right: var(--welo-side-m, 18px);
-    left:auto;
-  }
-  .welo-badge-wrap.welo-align-center{
-    left:50%;
-    right:auto;
-  }
+          .welo-badge-wrap.welo-align-left{
+            left: var(--welo-side-m, 18px);
+            right:auto;
+          }
+          .welo-badge-wrap.welo-align-right{
+            right: var(--welo-side-m, 18px);
+            left:auto;
+          }
+          .welo-badge-wrap.welo-align-center{
+            left:50%;
+            right:auto;
+          }
 
-  .welo-pill{ height:52px; width:52px; }
-  .welo-logo-container{ width:52px; height:52px; flex:0 0 52px; }
-  .welo-logo{ width:26px; height:26px; }
+          .welo-pill{ height:52px; width:52px; }
+          .welo-logo-container{ width:52px; height:52px; flex:0 0 52px; }
+          .welo-logo{ width:26px; height:26px; }
 
-  .welo-title{ font-size:15px; line-height:1.22; }
-  .welo-subtitle{ font-size:11px; line-height:1.22; }
+          .welo-title{ font-size:15px; line-height:1.22; }
+          .welo-subtitle{ font-size:11px; line-height:1.22; }
 
-  .welo-text{ padding: 1px 12px 2px 0px; }
+          .welo-text{ padding: 1px 12px 2px 0px; }
 
-  .welo-badge-dismiss{
-    width:24px;
-    height:24px;
-    top:-6px;
-    right:-6px;
-  }
-  .welo-badge-dismiss svg{
-    width:13px;
-    height:13px;
-    stroke-width:2.8;
-  }
+          .welo-badge-dismiss{
+            width:24px;
+            height:24px;
+            top:-6px;
+            right:-6px;
+          }
+          .welo-badge-dismiss svg{
+            width:13px;
+            height:13px;
+            stroke-width:2.8;
+          }
 
-  /* ✅ keep the modal centered (no forced fullscreen) */
-  .welo-overlay{
-    align-items:center;
-    justify-content:center;
-  }
+          /* ✅ keep the modal centered (no forced fullscreen) */
+          .welo-overlay{
+            align-items:center;
+            justify-content:center;
+          }
 
-  /* ✅ modal like desktop (not 100vw/100vh) */
-  .welo-modal{
-    width:95%;
-    max-width:1200px;
-    height:90%;
-    max-height:800px;
-    border-radius:16px;
-    transform: none;
-    box-shadow: 0 25px 50px rgba(0,0,0,0.25);
-    margin:auto;
-  }
-  .welo-overlay.show .welo-modal{ transform:none; }
+          /* ✅ modal like desktop (not 100vw/100vh) */
+          .welo-modal{
+            width:95%;
+            max-width:1200px;
+            height:90%;
+            max-height:800px;
+            border-radius:16px;
+            transform: none;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.25);
+            margin:auto;
+          }
+          .welo-overlay.show .welo-modal{ transform:none; }
 
-  /* safe-area + visible header (ok anche senza fullscreen) */
-  .welo-modal-header{
-    padding: calc(6px + env(safe-area-inset-top, 0px)) 12px 6px;
-    height: calc(40px + env(safe-area-inset-top, 0px));
-    background: var(--welo-header-bg);
-  }
+          /* safe-area + visible header (ok anche senza fullscreen) */
+          .welo-modal-header{
+            padding: calc(6px + env(safe-area-inset-top, 0px)) 12px 6px;
+            height: calc(40px + env(safe-area-inset-top, 0px));
+            background: var(--welo-header-bg);
+          }
 
-  .welo-header-title{ font-size:13px; }
+          .welo-header-title{ font-size:13px; }
 
-  .welo-header-buttons{ gap:6px; }
+          .welo-header-buttons{ gap:6px; }
 
-  .welo-open-btn,
-  .welo-fullscreen-btn,
-  .welo-close-btn{
-    padding:6px 8px;
-    min-height:30px;
-    font-size:12px;
-  }
+          .welo-open-btn,
+          .welo-fullscreen-btn,
+          .welo-close-btn{
+            padding:6px 8px;
+            min-height:30px;
+            font-size:12px;
+          }
 
-  /* fullscreen button hidden on mobile */
-  .welo-fullscreen-btn{ display:none; }
-}
+          /* fullscreen button hidden on mobile */
+          .welo-fullscreen-btn{ display:none; }
+        }
 
         @media (prefers-reduced-motion: reduce){
           .welo-badge-wrap, .welo-pill, .welo-text, .welo-subtitle{ transition:none !important; }
@@ -798,6 +846,7 @@
 
     function showCircle() {
       wrap.classList.add("is-visible");
+      prefetchWeloPage();
     }
 
     function expandPill() {
@@ -848,24 +897,41 @@
     function ensureIframeLoaded() {
       if (!iframe) return;
       if (iframe.getAttribute("data-loaded") === "1") return;
+
+      const skel = document.getElementById("welo-skel");
+
+      iframe.addEventListener(
+        "load",
+        () => {
+          if (skel) skel.style.display = "none";
+        },
+        { once: true }
+      );
+
       iframe.src = targetURL;
       iframe.setAttribute("data-loaded", "1");
     }
 
     function openWeloModal() {
       setViewportUnit();
-      ensureIframeLoaded();
 
       lastActiveEl = document.activeElement || null;
 
+      // Show immediately (paint first), then load iframe in next tick
       modal.style.display = "flex";
       modal.setAttribute("aria-hidden", "false");
-      lockBody();
 
-      setTimeout(() => {
+      requestAnimationFrame(() => {
         modal.classList.add("show");
+        lockBody();
+
+        // Load iframe AFTER overlay is visible (so skeleton appears instantly)
+        setTimeout(() => {
+          ensureIframeLoaded();
+        }, 0);
+
         if (closeBtn) closeBtn.focus({ preventScroll: true });
-      }, 10);
+      });
     }
 
     function closeWeloModal() {
@@ -912,6 +978,10 @@
     }
 
     if (pill) {
+      // warm-up prefetch right before click / hover
+      pill.addEventListener("mouseenter", prefetchWeloPage, { once: true });
+      pill.addEventListener("pointerdown", prefetchWeloPage, { once: true });
+
       pill.addEventListener("click", openWeloModal);
       pill.addEventListener("keydown", (e) => {
         if (e.key === "Enter" || e.key === " ") {
@@ -944,4 +1014,4 @@
     initBadge();
   }
 })();
-
+</script>
