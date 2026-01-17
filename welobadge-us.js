@@ -63,11 +63,11 @@
       addLink("preconnect", u.origin, "anonymous");
       addLink("dns-prefetch", u.origin);
 
-      // common CDNs (safe, best-effort)
+      // common CDNs (best-effort)
       addLink("preconnect", "https://cdn.prod.website-files.com", "anonymous");
       addLink("dns-prefetch", "https://cdn.prod.website-files.com");
 
-      // if you use Inter from Google fonts elsewhere on the site (no @import here)
+      // if Inter is used elsewhere on the host site
       addLink("preconnect", "https://fonts.googleapis.com");
       addLink("preconnect", "https://fonts.gstatic.com", "anonymous");
     } catch (e) {}
@@ -76,7 +76,6 @@
   function prefetchWeloPage() {
     if (prefetchWeloPage._done) return;
     prefetchWeloPage._done = true;
-    // best-effort: some browsers may ignore
     addLink("prefetch", targetURL);
   }
 
@@ -216,13 +215,29 @@
         </div>
 
         <div class="welo-iframe-container">
-          <!-- inline skeleton: shows instantly even if CSS is delayed -->
-          <div id="welo-skel" style="
-            position:absolute; inset:0;
-            display:flex; align-items:center; justify-content:center;
-            font: 500 13px/1.2 -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            color:#6b7280; background:#fff;
-          ">Loading…</div>
+          <!-- ✅ Skeleton overlay (shows instantly, hides on iframe load) -->
+          <div class="welo-skeleton" id="welo-skel" aria-hidden="true">
+            <div class="welo-skel-wrap">
+              <div class="welo-skel-row">
+                <div class="welo-skel-avatar"></div>
+                <div class="welo-skel-col">
+                  <div class="welo-skel-line welo-skel-line-lg"></div>
+                  <div class="welo-skel-line"></div>
+                </div>
+              </div>
+
+              <div class="welo-skel-grid">
+                <div class="welo-skel-card"></div>
+                <div class="welo-skel-card"></div>
+                <div class="welo-skel-card"></div>
+                <div class="welo-skel-card"></div>
+              </div>
+
+              <div class="welo-skel-line welo-skel-line-xl"></div>
+              <div class="welo-skel-line welo-skel-line-lg"></div>
+              <div class="welo-skel-line"></div>
+            </div>
+          </div>
 
           <iframe
             id="welo-iframe"
@@ -445,7 +460,6 @@
           backdrop-filter: blur(4px);
           z-index:2147483001;
 
-          /* desktop center */
           display:none;
           align-items:center;
           justify-content:center;
@@ -570,8 +584,90 @@
           flex:1;
           min-height:0;
           background:#fff;
-          position:relative; /* needed for inline skeleton absolute */
+          position:relative;
           z-index:1;
+        }
+
+        /* =========================
+           ✅ WELO SKELETON (modal only)
+           ========================= */
+        .welo-skeleton{
+          position:absolute;
+          inset:0;
+          background:#fff;
+          z-index:10;
+          display:flex;
+          align-items:flex-start;
+          justify-content:center;
+          padding: 22px 16px;
+          opacity: 1;
+          transition: opacity .22s ease;
+        }
+        .welo-skeleton.is-hidden{
+          opacity:0;
+          pointer-events:none;
+        }
+
+        .welo-skel-wrap{
+          width: min(1100px, 100%);
+          display:flex;
+          flex-direction:column;
+          gap:16px;
+          font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+          -webkit-font-smoothing: antialiased;
+        }
+
+        .welo-skel-row{ display:flex; gap:14px; align-items:center; }
+        .welo-skel-col{ flex:1; display:flex; flex-direction:column; gap:10px; }
+
+        .welo-skel-avatar{ width:54px; height:54px; border-radius:16px; }
+
+        .welo-skel-line{
+          height:14px;
+          border-radius:999px;
+          width:55%;
+        }
+
+        .welo-skel-line-lg{ width:72%; height:16px; }
+        .welo-skel-line-xl{ width:92%; height:18px; }
+
+        .welo-skel-grid{
+          display:grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap:12px;
+        }
+
+        .welo-skel-card{
+          height:110px;
+          border-radius:18px;
+        }
+
+        .welo-skel-avatar,
+        .welo-skel-line,
+        .welo-skel-card{
+          background:#eee;
+          position:relative;
+          overflow:hidden;
+        }
+
+        .welo-skel-avatar::after,
+        .welo-skel-line::after,
+        .welo-skel-card::after{
+          content:"";
+          position:absolute; inset:0;
+          transform: translateX(-60%);
+          background: linear-gradient(90deg, transparent, rgba(255,255,255,.55), transparent);
+          animation: weloShimmer 1.1s infinite;
+        }
+
+        @keyframes weloShimmer{
+          0%{ transform: translateX(-60%); }
+          100%{ transform: translateX(60%); }
+        }
+
+        @media (max-width: 767px){
+          .welo-skel-grid{ grid-template-columns: repeat(2, 1fr); }
+          .welo-skel-card{ height: 96px; }
         }
 
         /* MOBILE (fix header missing on iOS Safari/Chrome) */
@@ -614,13 +710,11 @@
             stroke-width:2.8;
           }
 
-          /* ✅ keep the modal centered (no forced fullscreen) */
           .welo-overlay{
             align-items:center;
             justify-content:center;
           }
 
-          /* ✅ modal like desktop (not 100vw/100vh) */
           .welo-modal{
             width:95%;
             max-width:1200px;
@@ -633,7 +727,6 @@
           }
           .welo-overlay.show .welo-modal{ transform:none; }
 
-          /* safe-area + visible header (ok anche senza fullscreen) */
           .welo-modal-header{
             padding: calc(6px + env(safe-area-inset-top, 0px)) 12px 6px;
             height: calc(40px + env(safe-area-inset-top, 0px));
@@ -652,12 +745,14 @@
             font-size:12px;
           }
 
-          /* fullscreen button hidden on mobile */
           .welo-fullscreen-btn{ display:none; }
         }
 
         @media (prefers-reduced-motion: reduce){
           .welo-badge-wrap, .welo-pill, .welo-text, .welo-subtitle{ transition:none !important; }
+          .welo-skel-avatar::after,
+          .welo-skel-line::after,
+          .welo-skel-card::after{ animation:none !important; }
         }
       `;
       document.head.appendChild(style);
@@ -677,6 +772,7 @@
     const openBtn = document.getElementById("welo-open-btn");
     const fullscreenBtn = document.getElementById("welo-fullscreen-btn");
     const iframe = document.getElementById("welo-iframe");
+    const skel = document.getElementById("welo-skel");
 
     // ---------- Width (fast: canvas measure + cache) ----------
     const measureCache = new Map();
@@ -893,16 +989,38 @@
       setFullscreenUI(isFullscreen);
     }
 
+    function showSkeleton() {
+      if (!skel) return;
+      skel.classList.remove("is-hidden");
+    }
+
+    function hideSkeleton() {
+      if (!skel) return;
+      skel.classList.add("is-hidden");
+      // remove from DOM after fade (optional, but keeps it clean)
+      setTimeout(() => {
+        try {
+          if (skel && skel.parentNode) skel.parentNode.removeChild(skel);
+        } catch (e) {}
+      }, 280);
+    }
+
     function ensureIframeLoaded() {
       if (!iframe) return;
-      if (iframe.getAttribute("data-loaded") === "1") return;
 
-      const skel = document.getElementById("welo-skel");
+      // always show skeleton when we start loading
+      showSkeleton();
+
+      if (iframe.getAttribute("data-loaded") === "1") {
+        // already loaded once; ensure skeleton is gone
+        hideSkeleton();
+        return;
+      }
 
       iframe.addEventListener(
         "load",
         () => {
-          if (skel) skel.style.display = "none";
+          hideSkeleton();
         },
         { once: true }
       );
