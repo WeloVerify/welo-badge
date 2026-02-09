@@ -1,6 +1,84 @@
 (function () {
   "use strict";
 
+  // =========================================================
+  // ✅ WELO TRACKING + ENABLE STATUS (Supabase Edge Functions)
+  // - Calls:
+  //   GET  /widget-config?company=...&lang=it|en  -> returns { enabled, welo_page_url... }
+  //   POST /track-impression                     -> saves impressions
+  //
+  // IMPORTANT:
+  // 1) Replace SUPABASE_FUNCTIONS_BASE with your real project URL:
+  //    https://YOUR-PROJECT.supabase.co/functions/v1
+  // 2) If the config says enabled=false, the badge will NOT render.
+  // =========================================================
+  const SUPABASE_FUNCTIONS_BASE = "https://ufqvcojyfsnscuddadnw.supabase.co/functions/v1";
+  const getLang = () => ((location.pathname || "").toLowerCase().startsWith("/en") ? "en" : "it");
+  const safeFetch = (url, opts) => {
+    try {
+      return fetch(url, opts);
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  };
+
+  function sendImpression(company) {
+    try {
+      if (!company) return;
+      const detectedDomain = location.hostname || "";
+      const pageUrl = location.href || "";
+      safeFetch(`${SUPABASE_FUNCTIONS_BASE}/track-impression`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          company,
+          detected_domain: detectedDomain,
+          page_url: pageUrl,
+        }),
+        keepalive: true,
+      }).catch(function () {});
+    } catch (e) {}
+  }
+
+  function checkEnabledAndTrack(company, onAllowed) {
+    try {
+      // If no company, we skip config and still allow rendering (no behavior change)
+      if (!company) {
+        onAllowed(true, null);
+        return;
+      }
+
+      const lang = getLang();
+      const url =
+        `${SUPABASE_FUNCTIONS_BASE}/widget-config?company=` +
+        encodeURIComponent(company) +
+        `&lang=${encodeURIComponent(lang)}`;
+
+      safeFetch(url, { method: "GET" })
+        .then(function (r) {
+          return r.json().catch(function () {
+            return null;
+          });
+        })
+        .then(function (cfg) {
+          const enabled = cfg && typeof cfg.enabled === "boolean" ? cfg.enabled : true;
+
+          // Track impression (best-effort) even if disabled? You can change this behavior:
+          // Here: track only if enabled is true (cleaner for billing).
+          if (enabled) sendImpression(company);
+
+          onAllowed(enabled, cfg || null);
+        })
+        .catch(function () {
+          // If config fails, fallback to allow rendering (no hard block)
+          sendImpression(company);
+          onAllowed(true, null);
+        });
+    } catch (e) {
+      onAllowed(true, null);
+    }
+  }
+
   // ---------- Resolve the script tag (supports multiple embeds) ----------
   const scripts = document.querySelectorAll("script[data-url]");
   const thisScript =
@@ -1120,9 +1198,18 @@
     tExpand = setTimeout(expandPill, EXPAND_AFTER_MS);
   }
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", initBadge, { once: true });
-  } else {
-    initBadge();
+  // ✅ Wrap init with config check (only blocks when company is present AND enabled=false)
+  function start() {
+    checkEnabledAndTrack(forcedCompany, function (enabled) {
+      if (!enabled) return;
+
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", initBadge, { once: true });
+      } else {
+        initBadge();
+      }
+    });
   }
+
+  start();
 })();
