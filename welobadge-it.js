@@ -1,27 +1,6 @@
 (function () {
   "use strict";
 
-  // =========================================================
-  // ✅ WELO TRACKING + ENABLE STATUS (Supabase Edge Functions)
-  // - Calls:
-  //   GET  /widget-config?company=...&lang=it|en  -> returns { enabled, welo_page_url... }
-  //   POST /track-impression                     -> saves impressions
-  //
-  // IMPORTANT:
-  // 1) Replace SUPABASE_FUNCTIONS_BASE with your real project URL:
-  //    https://YOUR-PROJECT.supabase.co/functions/v1
-  // 2) If the config says enabled=false, the badge will NOT render.
-  // =========================================================
-  const SUPABASE_FUNCTIONS_BASE = "https://ufqvcojyfsnscuddadnw.supabase.co/functions/v1";
-  const getLang = () => ((location.pathname || "").toLowerCase().startsWith("/en") ? "en" : "it");
-  const safeFetch = (url, opts) => {
-    try {
-      return fetch(url, opts);
-    } catch (e) {
-      return Promise.reject(e);
-    }
-  };
-
   // ---------- Resolve the script tag (supports multiple embeds) ----------
   const scripts = document.querySelectorAll("script[data-url]");
   const thisScript =
@@ -31,91 +10,11 @@
 
   if (!thisScript) return;
 
-  // ✅ targetURL can be overridden by widget-config (IT/EN)
-  let targetURL = thisScript.getAttribute("data-url") || "https://welobadge.com";
-
-  // ✅ Separate:
-  // - COMPANY_KEY: must match client.company_slug OR client.id (uuid)
-  // - COMPANY_NAME: only for UI text
-  const rawCompany = (thisScript.getAttribute("data-company") || "").trim(); // might be slug OR name
-  const companyNameAttr =
-    (thisScript.getAttribute("data-company-name") || "").trim();
-
-  function looksLikeUuid(s) {
-    return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(s || ""));
-  }
-  function looksLikeSlug(s) {
-    // allow welo, amazon-com, acme_123
-    return /^[a-z0-9][a-z0-9_-]{1,80}$/i.test(String(s || ""));
-  }
-
-  // If data-company contains spaces or weird chars, treat it as NAME, not KEY
-  const COMPANY_KEY =
-    looksLikeUuid(rawCompany) || looksLikeSlug(rawCompany) ? rawCompany : "";
-
-  const COMPANY_NAME =
-    (companyNameAttr || (!COMPANY_KEY && rawCompany ? rawCompany : "")).trim();
-
-  function sendImpression(companyKey) {
-    try {
-      if (!companyKey) return;
-      const detectedDomain = location.hostname || "";
-      const pageUrl = location.href || "";
-      safeFetch(`${SUPABASE_FUNCTIONS_BASE}/track-impression`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          company: companyKey,
-          detected_domain: detectedDomain,
-          page_url: pageUrl,
-        }),
-        keepalive: true,
-      }).catch(function () {});
-    } catch (e) {}
-  }
-
-  function checkEnabledAndTrack(companyKey, onAllowed) {
-    try {
-      // If no company key, we skip config and still allow rendering (no hard block)
-      if (!companyKey) {
-        onAllowed(true, null);
-        return;
-      }
-
-      const lang = getLang();
-      const url =
-        `${SUPABASE_FUNCTIONS_BASE}/widget-config?company=` +
-        encodeURIComponent(companyKey) +
-        `&lang=${encodeURIComponent(lang)}`;
-
-      safeFetch(url, { method: "GET" })
-        .then(function (r) {
-          return r.json().catch(function () {
-            return null;
-          });
-        })
-        .then(function (cfg) {
-          const enabled = cfg && typeof cfg.enabled === "boolean" ? cfg.enabled : true;
-
-          // ✅ If backend returns the correct IT/EN URL, override targetURL
-          if (cfg && cfg.welo_page_url) {
-            targetURL = String(cfg.welo_page_url);
-          }
-
-          // Track impression only if enabled
-          if (enabled) sendImpression(companyKey);
-
-          onAllowed(enabled, cfg || null);
-        })
-        .catch(function () {
-          // If config fails, fallback to allow rendering (no hard block)
-          sendImpression(companyKey);
-          onAllowed(true, null);
-        });
-    } catch (e) {
-      onAllowed(true, null);
-    }
-  }
+  const targetURL = thisScript.getAttribute("data-url") || "https://welobadge.com";
+  const forcedCompany =
+    thisScript.getAttribute("data-company") ||
+    thisScript.getAttribute("data-company-name") ||
+    "";
 
   // ---------- Optional config via data-* ----------
   const ALIGN = String(thisScript.getAttribute("data-align") || "left").toLowerCase(); // left | center | right
@@ -230,9 +129,8 @@
     setViewportUnit();
     warmupConnections();
 
-    // ✅ Use COMPANY_NAME only for UI
     const companyName =
-      sanitizeCompanyName(COMPANY_NAME || deriveCompanyName(targetURL)) || "Azienda";
+      sanitizeCompanyName(forcedCompany || deriveCompanyName(targetURL)) || "Azienda";
 
     // ---------- Copy (IT) ----------
     const TITLE_TEXT = "Certificazione Welo Badge";
@@ -302,6 +200,7 @@
               <span class="welo-btn-text">Apri</span>
             </button>
 
+            <!-- ✅ FULLSCREEN / ZOOM BUTTON (VISIBLE ON MOBILE TOO) -->
             <button class="welo-fullscreen-btn" id="welo-fullscreen-btn" type="button" title="Schermo intero" aria-pressed="false">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
@@ -320,6 +219,7 @@
         </div>
 
         <div class="welo-iframe-container">
+          <!-- ✅ Skeleton overlay (shows instantly, hides on iframe load) -->
           <div class="welo-skeleton" id="welo-skel" aria-hidden="true">
             <div class="welo-skel-wrap">
               <div class="welo-skel-row">
@@ -358,8 +258,10 @@
       const style = document.createElement("style");
       style.id = "welo-badge-style";
       style.innerHTML = `
+        /* NOTE: removed @import to avoid delaying initial paint */
+
         :root{
-          --welo-pill-width: 300px;
+          --welo-pill-width: 300px; /* overwritten by JS */
           --welo-stroke: #DBDBDB;
           --welo-shadow: 0px 4px 10px rgba(0,0,0,0.08);
           --welo-shadow-hover: 0px 6px 14px rgba(0,0,0,0.09);
@@ -377,7 +279,9 @@
           left: var(--welo-side, 20px);
           z-index: 2147483000;
           font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
           -webkit-text-size-adjust: 100%;
+
           opacity: 0;
           transform: translate3d(var(--welo-tx, 0px), 10px, 0);
           pointer-events: none;
@@ -402,18 +306,23 @@
           pointer-events: auto;
         }
 
+        /* PILL */
         .welo-pill{
           height: 56px;
           width: 56px;
           border-radius: 999px;
           overflow: hidden;
+
           display:flex;
           align-items:center;
+
           background:#fff;
           border:1px solid var(--welo-stroke);
           box-shadow: var(--welo-shadow);
+
           cursor:pointer;
           -webkit-tap-highlight-color: transparent;
+
           transition:
             width 560ms cubic-bezier(0.22, 1, 0.36, 1),
             box-shadow 200ms ease;
@@ -446,15 +355,19 @@
         .welo-text{
           flex:1;
           min-width:0;
+
           display:flex;
           flex-direction:column;
           justify-content:center;
           gap:3px;
+
           opacity:0;
           transform: translateX(-10px);
+
           transition:
             opacity 320ms cubic-bezier(0.22, 1, 0.36, 1),
             transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
+
           padding: 1px 15px 2px 0px;
         }
 
@@ -469,6 +382,7 @@
           font-weight:600;
           color:#141414;
           line-height:1.22;
+
           white-space: nowrap;
           overflow: hidden;
           text-overflow: clip;
@@ -480,9 +394,11 @@
           font-weight:400;
           color:#8A8A8A;
           line-height:1.22;
+
           white-space:nowrap;
           overflow:hidden;
           text-overflow: clip;
+
           transition:
             opacity 420ms cubic-bezier(0.22, 1, 0.36, 1),
             transform 420ms cubic-bezier(0.22, 1, 0.36, 1);
@@ -492,23 +408,30 @@
         .welo-subtitle.welo-subtitle-out{ opacity:0; transform: translateY(8px); }
         .welo-subtitle.welo-subtitle-prein{ opacity:0; transform: translateY(-8px); }
 
+        /* X CIRCLE */
         .welo-badge-dismiss{
           position:absolute;
           top: -6px;
           right: -6px;
+
           width:25px;
           height:25px;
           border-radius:999px;
+
           background:#fff;
           border:1px solid var(--welo-stroke);
           box-shadow: var(--welo-shadow);
+
           display:flex;
           align-items:center;
           justify-content:center;
+
           cursor:pointer;
+
           opacity:0;
           pointer-events:none;
           transition: opacity 220ms ease;
+
           appearance:none;
           -webkit-appearance:none;
           padding:0;
@@ -531,6 +454,7 @@
           pointer-events:auto;
         }
 
+        /* ===== MODAL ===== */
         .welo-overlay{
           display:none;
           position:fixed;
@@ -539,9 +463,11 @@
           -webkit-backdrop-filter: blur(4px);
           backdrop-filter: blur(4px);
           z-index:2147483001;
+
           display:none;
           align-items:center;
           justify-content:center;
+
           opacity:0;
           transition: opacity 0.3s ease;
           font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -577,6 +503,7 @@
           margin:0;
         }
 
+        /* HEADER */
         .welo-modal-header{
           display:flex;
           align-items:center;
@@ -588,6 +515,17 @@
           height: 56px;
           position: relative;
           z-index: 15;
+        }
+
+        .welo-header-title{
+          display:flex;
+          align-items:center;
+          gap: 0;
+          font-size:14px;
+          font-weight:600;
+          color:#1a1a1a;
+          margin:0;
+          white-space:nowrap;
         }
 
         .welo-header-buttons{
@@ -634,6 +572,13 @@
           color:#1a1a1a;
         }
 
+        .welo-open-btn svg,
+        .welo-fullscreen-btn svg,
+        .welo-close-btn svg{
+          stroke-width:2;
+          flex:0 0 auto;
+        }
+
         .welo-btn-text{
           display:inline-block;
           white-space:nowrap;
@@ -647,6 +592,9 @@
           z-index:1;
         }
 
+        /* =========================
+           ✅ WELO SKELETON (modal only)
+           ========================= */
         .welo-skeleton{
           position:absolute;
           inset:0;
@@ -675,6 +623,7 @@
 
         .welo-skel-row{ display:flex; gap:14px; align-items:center; }
         .welo-skel-col{ flex:1; display:flex; flex-direction:column; gap:10px; }
+
         .welo-skel-avatar{ width:54px; height:54px; border-radius:16px; }
 
         .welo-skel-line{
@@ -725,6 +674,7 @@
           .welo-skel-card{ height: 96px; }
         }
 
+        /* MOBILE */
         @media (max-width: 768px){
           .welo-badge-wrap{
             bottom: var(--welo-bottom-m, 18px);
@@ -775,7 +725,10 @@
             margin:auto;
           }
 
+          /* ✅ IMPORTANT: fullscreen button visible on mobile now */
           .welo-fullscreen-btn{ display:flex; }
+
+          /* slightly smaller button text on mobile */
           .welo-btn-text{ font-size:12px; }
           .welo-modal-header{
             padding: calc(6px + env(safe-area-inset-top, 0px)) 10px 6px;
@@ -816,6 +769,7 @@
     const iframe = document.getElementById("welo-iframe");
     const skel = document.getElementById("welo-skel");
 
+    // ---------- Width (fast: canvas measure + cache) ----------
     const measureCache = new Map();
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
@@ -880,6 +834,7 @@
       document.documentElement.style.setProperty("--welo-pill-width", `${w}px`);
     }
 
+    // debounced resize (also refresh vh for iOS)
     let resizeT = null;
     const onResize = () => {
       if (resizeT) clearTimeout(resizeT);
@@ -903,6 +858,7 @@
       setTimeout(computePillWidth, 500);
     }
 
+    // ---------- State / timers ----------
     let userCollapsed = false;
     let tShow = null;
     let tExpand = null;
@@ -911,6 +867,7 @@
 
     let lastActiveEl = null;
 
+    // robust iOS scroll lock
     let scrollY = 0;
     let prevBodyStyles = null;
 
@@ -996,6 +953,7 @@
       if (subEl) subEl.textContent = ROTATION[0].text;
     }
 
+    // ---------- Fullscreen / "Zoom" ----------
     function setFullscreenUI(isOn) {
       const modalEl = modal.querySelector(".welo-modal");
       if (!modalEl || !fullscreenBtn) return;
@@ -1031,6 +989,7 @@
       setFullscreenUI(isFullscreen);
     }
 
+    // ---------- Skeleton control ----------
     function showSkeleton() {
       if (!skel) return;
       skel.classList.remove("is-hidden");
@@ -1112,6 +1071,7 @@
       else window.open(targetURL, "_blank", "noopener,noreferrer");
     }
 
+    // ---------- Events ----------
     const stopAll = (e) => {
       e.preventDefault();
       e.stopPropagation();
@@ -1155,22 +1115,14 @@
       if (e.key === "Escape" && modal.style.display === "flex") closeWeloModal();
     });
 
+    // ---------- Timeline ----------
     tShow = setTimeout(showCircle, SHOW_CIRCLE_AFTER_MS);
     tExpand = setTimeout(expandPill, EXPAND_AFTER_MS);
   }
 
-  // ✅ Wrap init with config check (only blocks when companyKey is present AND enabled=false)
-  function start() {
-    checkEnabledAndTrack(COMPANY_KEY, function (enabled) {
-      if (!enabled) return;
-
-      if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", initBadge, { once: true });
-      } else {
-        initBadge();
-      }
-    });
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initBadge, { once: true });
+  } else {
+    initBadge();
   }
-
-  start();
 })();
