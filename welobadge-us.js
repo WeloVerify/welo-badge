@@ -1,6 +1,73 @@
 (function () {
   "use strict";
 
+  // ---------- Analytics config ----------
+  const TRACK_ENDPOINT = "https://ufqvcojyfsnscuddadnw.supabase.co/functions/v1/track";
+  const LANG = "us";
+  const VISITOR_TTL_MS = 90 * 24 * 60 * 60 * 1000;
+
+  // ---------- Analytics helpers ----------
+  function getOrCreateVisitorId() {
+    const KEY = "welo_visitor_id";
+    const EXP = "welo_visitor_expiry";
+    const now = Date.now();
+    try {
+      let id = localStorage.getItem(KEY);
+      let exp = parseInt(localStorage.getItem(EXP) || "0");
+      if (!id || now > exp) {
+        id = "v_" + Math.random().toString(36).slice(2) + now.toString(36);
+        localStorage.setItem(KEY, id);
+        localStorage.setItem(EXP, String(now + VISITOR_TTL_MS));
+      }
+      return id;
+    } catch (e) {
+      return "v_" + Math.random().toString(36).slice(2);
+    }
+  }
+
+  function getOrCreateSessionId() {
+    const KEY = "welo_session_id";
+    try {
+      let id = sessionStorage.getItem(KEY);
+      if (!id) {
+        id = "s_" + Math.random().toString(36).slice(2);
+        sessionStorage.setItem(KEY, id);
+      }
+      return id;
+    } catch (e) {
+      return "s_" + Math.random().toString(36).slice(2);
+    }
+  }
+
+  function sendEvent(eventName, extra) {
+    try {
+      const payload = {
+        event_name: eventName,
+        company_name: forcedCompany || "",
+        welo_page_url: targetURL,
+        source_page_url: window.location.href,
+        source_domain: window.location.hostname,
+        referrer: document.referrer || "",
+        visitor_id: getOrCreateVisitorId(),
+        session_id: getOrCreateSessionId(),
+        user_agent: navigator.userAgent,
+        language_version: LANG,
+        metadata: extra || null,
+      };
+      const body = JSON.stringify(payload);
+      if (navigator.sendBeacon) {
+        navigator.sendBeacon(TRACK_ENDPOINT, body);
+      } else {
+        fetch(TRACK_ENDPOINT, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body,
+          keepalive: true,
+        });
+      }
+    } catch (e) {}
+  }
+
   // ---------- Resolve the script tag (supports multiple embeds) ----------
   const scripts = document.querySelectorAll("script[data-url]");
   const thisScript =
@@ -937,6 +1004,8 @@
     function showCircle() {
       wrap.classList.add("is-visible");
       prefetchWeloPage();
+      // ---------- Analytics: badge impression ----------
+      sendEvent("badge_impression");
     }
 
     function expandPill() {
@@ -1045,6 +1114,9 @@
 
         if (closeBtn) closeBtn.focus({ preventScroll: true });
       });
+
+      // ---------- Analytics: badge click ----------
+      sendEvent("badge_click");
     }
 
     function closeWeloModal() {
