@@ -533,6 +533,7 @@
     let tShow = null, tExpand = null, tRotate = null;
     let isFullscreen = false;
     let lastActiveEl = null;
+    let modalOpenedAt = null; // ← timestamp apertura modal per calcolo durata
     let scrollY = 0;
     let prevBodyStyles = null;
 
@@ -593,7 +594,6 @@
     function showCircle() {
       wrap.classList.add("is-visible");
       prefetchWeloPage();
-      // impression: badge visibile nel viewport
       sendEvent("badge_impression");
     }
 
@@ -664,6 +664,7 @@
     function openWeloModal() {
       setViewportUnit();
       lastActiveEl = document.activeElement || null;
+      modalOpenedAt = Date.now(); // ← salva timestamp apertura
       modal.style.display = "flex";
       modal.setAttribute("aria-hidden", "false");
       requestAnimationFrame(() => {
@@ -679,6 +680,12 @@
       modal.classList.remove("show");
       modal.setAttribute("aria-hidden", "true");
       if (isFullscreen) { isFullscreen = false; setFullscreenUI(false); }
+      // ← calcola e invia durata modal
+      if (modalOpenedAt) {
+        const seconds = Math.round((Date.now() - modalOpenedAt) / 1000);
+        sendEvent("modal_open_duration", { seconds });
+        modalOpenedAt = null;
+      }
       unlockBody();
       setTimeout(() => {
         modal.style.display = "none";
@@ -688,6 +695,7 @@
     }
 
     function openWeloPage() {
+      sendEvent("modal_open_tab"); // ← click su "Apri" per aprire Welo Page in tab
       if (window.innerWidth <= 768) window.location.href = targetURL;
       else window.open(targetURL, "_blank", "noopener,noreferrer");
     }
