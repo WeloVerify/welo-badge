@@ -931,8 +931,8 @@
     let tExpand = null;
     let tRotate = null;
     let isFullscreen = false;
-
     let lastActiveEl = null;
+    let modalOpenedAt = null; // ← timestamp apertura modal per calcolo durata
 
     // robust iOS scroll lock
     let scrollY = 0;
@@ -1100,6 +1100,7 @@
       setViewportUnit();
 
       lastActiveEl = document.activeElement || null;
+      modalOpenedAt = Date.now(); // ← salva timestamp apertura
 
       modal.style.display = "flex";
       modal.setAttribute("aria-hidden", "false");
@@ -1128,6 +1129,13 @@
         setFullscreenUI(false);
       }
 
+      // ---------- Analytics: modal duration ----------
+      if (modalOpenedAt) {
+        const seconds = Math.round((Date.now() - modalOpenedAt) / 1000);
+        sendEvent("modal_open_duration", { seconds });
+        modalOpenedAt = null;
+      }
+
       unlockBody();
 
       setTimeout(() => {
@@ -1139,6 +1147,8 @@
     }
 
     function openWeloPage() {
+      // ---------- Analytics: click su "Open" per aprire Welo Page ----------
+      sendEvent("modal_open_tab");
       if (window.innerWidth <= 768) window.location.href = targetURL;
       else window.open(targetURL, "_blank", "noopener,noreferrer");
     }
